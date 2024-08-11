@@ -1,6 +1,7 @@
 import { PinataProvider } from "./providers";
 import * as z from "zod";
 import { DEDAULT_SCHEMA } from "./constants";
+import { PinataGetDataError } from "./errors";
 import type { ProviderType } from "./types";
 
 export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
@@ -12,8 +13,9 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     provider: ProviderType;
     schema?: T;
     pinata?: {
-      key: string;
-      gateway: string;
+      pinningKey: string;
+      gateway?: string;
+      gatewayKey?: string;
     };
   }) {
     if (config.schema === undefined) {
@@ -24,14 +26,15 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     this.provider = config.provider;
     if (this.provider === "pinata") {
       if (!config.pinata) {
-        throw new Error("Pinata config is required");
+        throw new Error("Error: pinata config is required");
       }
       this.pinataProvider = new PinataProvider(
-        config.pinata!.key,
-        config.pinata!.gateway
+        config.pinata!.pinningKey,
+        config.pinata!.gateway,
+        config.pinata!.gatewayKey
       );
     } else {
-      throw new Error("Invalid provider");
+      throw new Error("Error: invalid provider");
     }
   }
 
@@ -45,7 +48,22 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
       const cid = await this.pinataProvider!.pin(data);
       return cid;
     } else {
-      throw new Error("Invalid provider");
+      throw new Error("Error: invalid provider");
+    }
+  }
+
+  async get(cid: string): Promise<z.infer<T>> {
+    if (this.provider === "pinata") {
+      const data = await this.pinataProvider!.get(cid);
+      const parsedData = this.schema.safeParse(data);
+      if (!parsedData.success) {
+        throw new PinataGetDataError(
+          "Error: the fetched data does not match the schema"
+        );
+      }
+      return parsedData.data;
+    } else {
+      throw new Error("Error: invalid provider");
     }
   }
 }
