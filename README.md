@@ -1,4 +1,4 @@
-# Hats-Protocol Modules SDK
+# Hats-Protocol Details SDK
 
 ## Documentation
 

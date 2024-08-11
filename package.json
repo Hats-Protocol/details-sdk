@@ -35,5 +35,8 @@
     "axios": "^1.7.3",
     "url-join": "^5.0.0",
     "zod": "^3.21.4"
+  },
+  "peerDependencies": {
+    "zod": "^3.21.4"
   }
 }
