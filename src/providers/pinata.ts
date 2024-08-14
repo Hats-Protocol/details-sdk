@@ -1,6 +1,6 @@
 import axios from "axios";
 import urlJoin from "url-join";
-import { PinataPinningError, PinataGetDataError } from "../errors";
+import { PinataPinningError } from "../errors";
 
 export class PinataProvider {
   private readonly pinningKey: string;
@@ -41,55 +41,96 @@ export class PinataProvider {
     }
   }
 
-  async get(cid: string): Promise<unknown> {
-    if (this.gateway === undefined) {
-      try {
-        const res = await axios.get(`https://ipfs.io/ipfs/${cid}`);
-        if (res.status === 200) {
-          return res.data;
+  async get(
+    cid: string
+  ): Promise<{ data: unknown | null; error: { message: string } | null }> {
+    try {
+      if (this.gateway === undefined) {
+        const res = await axios.get(`https://ipfs.io/ipfs/${cid}`, {
+          responseType: "json",
+        });
+        const contentType = res.headers["content-type"];
+        if (contentType.includes("application/json")) {
+          return { data: res.data, error: null };
         } else {
-          throw new PinataGetDataError(
-            `Error: failed to get data, gateway returned with error code: ${res.status}`
-          );
+          return {
+            data: null,
+            error: {
+              message: `Error: expecting a JSON object, but received data of type ${contentType}`,
+            },
+          };
         }
-      } catch (error) {
-        throw new PinataGetDataError(
-          "Error: unexpected error when trying to get data"
-        );
-      }
-    } else if (this.gatewayKey === undefined) {
-      try {
+      } else if (this.gatewayKey === undefined) {
         const url = urlJoin(this.gateway, "ipfs", cid);
         const res = await axios.get(`${url}`);
-        if (res.status === 200) {
-          return res.data;
+        const contentType = res.headers["content-type"];
+        if (contentType.includes("application/json")) {
+          return { data: res.data, error: null };
         } else {
-          throw new PinataGetDataError(
-            `Error: failed to get data, gateway returned with error code: ${res.status}`
-          );
+          return {
+            data: null,
+            error: {
+              message: `Error: expecting a JSON object, but received data of type ${contentType}`,
+            },
+          };
         }
-      } catch (error) {
-        throw new PinataGetDataError(
-          "Error: unexpected error when trying to get data"
-        );
-      }
-    } else {
-      try {
+      } else {
         const url = urlJoin(this.gateway, "ipfs", cid);
         const res = await axios.get(
           `${url}?pinataGatewayToken=${this.gatewayKey}`
         );
-        if (res.status === 200) {
-          return res.data;
+        const contentType = res.headers["content-type"];
+        if (contentType.includes("application/json")) {
+          return { data: res.data, error: null };
         } else {
-          throw new PinataGetDataError(
-            `Error: failed to get data, gateway returned with error code: ${res.status}`
-          );
+          return {
+            data: null,
+            error: {
+              message: `Error: expecting a JSON object, but received data of type ${contentType}`,
+            },
+          };
         }
-      } catch (error) {
-        throw new PinataGetDataError(
-          "Error: unexpected error when trying to get data"
-        );
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (axios.isAxiosError(error)) {
+          if (error.response) {
+            return {
+              data: null,
+              error: {
+                message: `Error: failed to get data, server returned with error code: ${error.response.status}`,
+              },
+            };
+          } else if (error.request) {
+            return {
+              data: null,
+              error: {
+                message: "Error: failed to get data, no response received",
+              },
+            };
+          } else {
+            return {
+              data: null,
+              error: {
+                message: `Error: unexpected error when trying to get data: ${error.message}`,
+              },
+            };
+          }
+        } else {
+          return {
+            data: null,
+            error: {
+              message: `Error: unexpected error when trying to get data: ${error.message}`,
+            },
+          };
+        }
+      } else {
+        return {
+          data: null,
+          error: {
+            message: `Error: unexpected error when trying to get data: ${error}`,
+          },
+        };
       }
     }
   }

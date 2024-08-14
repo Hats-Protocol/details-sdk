@@ -56,7 +56,7 @@ describe("Test", () => {
     const data = await hatsDetailsClientCustomSchema.get(
       "QmVvSUCcxbQcoTX6x5G9bCp7pjtTEnhT6dCBjTEJuCv5Ki"
     );
-    expect(data).toStrictEqual({
+    expect(data.parsedData).toStrictEqual({
       name: "Hat",
       description: "This is a hat",
     });
@@ -86,7 +86,7 @@ describe("Test", () => {
     const data = await hatsDetailsClientDefaultSchema.get(
       "QmcSopxmw5rMEEEU8NmGGQ2mbHJ293CGEiQ4r4w4jEECVy"
     );
-    expect(data).toStrictEqual({
+    expect(data.parsedData).toStrictEqual({
       type: "1.0",
       data: {
         name: "Hat",
@@ -115,7 +115,7 @@ describe("Test", () => {
     const data = await hatsDetailsClientDefaultSchema.get(
       "QmTTPqtdQHoaSPYaw7BAESEg4xM1HbebhiFWxKT26LWYnZ"
     );
-    expect(data).toStrictEqual({
+    expect(data.parsedData).toStrictEqual({
       type: "1.0",
       data: {
         name: "Hat",
@@ -133,7 +133,7 @@ describe("Test", () => {
     const data = await hatsDetailsClientGateway.get(
       "QmTTPqtdQHoaSPYaw7BAESEg4xM1HbebhiFWxKT26LWYnZ"
     );
-    expect(data).toStrictEqual({
+    expect(data.parsedData).toStrictEqual({
       type: "1.0",
       data: {
         name: "Hat",
@@ -151,7 +151,7 @@ describe("Test", () => {
     const data = await hatsDetailsClientGatewayKey.get(
       "QmTTPqtdQHoaSPYaw7BAESEg4xM1HbebhiFWxKT26LWYnZ"
     );
-    expect(data).toStrictEqual({
+    expect(data.parsedData).toStrictEqual({
       type: "1.0",
       data: {
         name: "Hat",

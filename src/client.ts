@@ -1,7 +1,6 @@
 import { PinataProvider } from "./providers";
 import * as z from "zod";
 import { DEDAULT_SCHEMA } from "./constants";
-import { PinataGetDataError } from "./errors";
 import type { ProviderType } from "./types";
 
 export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
@@ -52,16 +51,34 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     }
   }
 
-  async get(cid: string): Promise<z.infer<T>> {
+  async get(cid: string): Promise<{
+    parsedData: z.infer<T> | null;
+    rawData: unknown | null;
+    error: { message: string } | null;
+  }> {
     if (this.provider === "pinata") {
-      const data = await this.pinataProvider!.get(cid);
-      const parsedData = this.schema.safeParse(data);
-      if (!parsedData.success) {
-        throw new PinataGetDataError(
-          "Error: the fetched data does not match the schema"
-        );
+      const res = await this.pinataProvider!.get(cid);
+      if (res.error) {
+        return {
+          parsedData: null,
+          rawData: null,
+          error: { message: res.error.message },
+        };
       }
-      return parsedData.data;
+
+      const parsedData = this.schema.safeParse(res.data);
+      if (!parsedData.success) {
+        return {
+          parsedData: null,
+          rawData: res.data,
+          error: null,
+        };
+      }
+      return {
+        parsedData: parsedData.data,
+        rawData: null,
+        error: null,
+      };
     } else {
       throw new Error("Error: invalid provider");
     }
