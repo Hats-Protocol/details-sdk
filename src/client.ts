@@ -8,6 +8,15 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
   private readonly provider: ProviderType;
   private readonly schema: T;
 
+  /**
+   * Initialize a HatsDetailsClient.
+   *
+   * @param provider - Type of IPFS provider to use, currently on "pinata" is supported.
+   * @param schema - Optional Zod schema to validate the data. If not provided, a default schema will be used.
+   * @param pinata - An object containing the pinata pinning key, optional gateway url and gateway optional key.
+   * @returns A HatsDetailsClient instance.
+   * For more information, check out the docs: https://docs.hatsprotocol.xyz/for-developers/v1-sdk/hat-details/getting-started#hatsdetailsclient-initialization
+   */
   constructor(config: {
     provider: ProviderType;
     schema?: T;
@@ -37,6 +46,13 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     }
   }
 
+  /**
+   * Pin data to IPFS.
+   *
+   * @param data - Data to pin to IPFS. The data will be validated against the schema provided in the constructor.
+   * @returns A promise that resolves to the CID of the pinned data.
+   * For more information, check out the docs: https://docs.hatsprotocol.xyz/for-developers/v1-sdk/hat-details/usage#store
+   */
   async pin(data: z.infer<T>): Promise<string> {
     const isvalidRes = this.schema.safeParse(data);
     if (!isvalidRes.success) {
@@ -51,6 +67,15 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     }
   }
 
+  /**
+   * Get data from IPFS.
+   *
+   * @param cid - CID of the data to retrieve.
+   * @returns A promise that resolves to an object containing the parsed data if the data is compatible to the schema.
+   * If the data is not compatible with the schema, then it will be returned in the raw data field.
+   * If an error occured, then the error field will contain the error message.
+   * For more information, check out the docs: https://docs.hatsprotocol.xyz/for-developers/v1-sdk/hat-details/usage#read
+   */
   async get(cid: string): Promise<{
     parsedData: z.infer<T> | null;
     rawData: unknown | null;
