@@ -1,9 +1,9 @@
 import { PinataProvider } from "./providers";
 import * as z from "zod";
-import { DEDAULT_SCHEMA } from "./constants";
+import { DEFAULT_SCHEMA } from "./constants";
 import type { ProviderType } from "./types";
 
-export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
+export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEFAULT_SCHEMA> {
   private readonly pinataProvider: PinataProvider | undefined;
   private readonly provider: ProviderType;
   private readonly schema: T;
@@ -27,7 +27,7 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
     };
   }) {
     if (config.schema === undefined) {
-      this.schema = DEDAULT_SCHEMA as unknown as T;
+      this.schema = DEFAULT_SCHEMA as unknown as T;
     } else {
       this.schema = config.schema;
     }
@@ -54,9 +54,9 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
    * For more information, check out the docs: https://docs.hatsprotocol.xyz/for-developers/v1-sdk/hat-details/usage#store
    */
   async pin(data: z.infer<T>): Promise<string> {
-    const isvalidRes = this.schema.safeParse(data);
-    if (!isvalidRes.success) {
-      throw isvalidRes.error;
+    const isValidRes = this.schema.safeParse(data);
+    if (!isValidRes.success) {
+      throw isValidRes.error;
     }
 
     if (this.provider === "pinata") {
@@ -73,7 +73,7 @@ export class HatsDetailsClient<T extends z.ZodTypeAny = typeof DEDAULT_SCHEMA> {
    * @param cid - CID of the data to retrieve.
    * @returns A promise that resolves to an object containing the parsed data if the data is compatible to the schema.
    * If the data is not compatible with the schema, then it will be returned in the raw data field.
-   * If an error occured, then the error field will contain the error message.
+   * If an error occurred, then the error field will contain the error message.
    * For more information, check out the docs: https://docs.hatsprotocol.xyz/for-developers/v1-sdk/hat-details/usage#read
    */
   async get(cid: string): Promise<{
